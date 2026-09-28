@@ -4,14 +4,14 @@ using UnityEngine;
 public class PlayerManager : MonoBehaviour
 {
     InputManager inputManager;
-    PlayerLocomotion3rd _playerLocomotion3Rd;
-    PlayerTopDownController _playerTopDownController;
+    PlayerLocomotion3rd playerLocomotion3Rd;
+    PlayerTopDownController playerTopDownController;
     
     private void Awake()
     {
         inputManager = GetComponent<InputManager>();
-        _playerLocomotion3Rd = GetComponent<PlayerLocomotion3rd>();
-        _playerTopDownController = GetComponent<PlayerTopDownController>();
+        playerLocomotion3Rd = GetComponent<PlayerLocomotion3rd>();
+        playerTopDownController = GetComponent<PlayerTopDownController>();
     }
 
     private void Update()
@@ -21,7 +21,7 @@ public class PlayerManager : MonoBehaviour
 
     private void FixedUpdate()
     {
-        //_playerLocomotion3Rd.HandleAllMovement();
-        _playerTopDownController.HandleAllMovement();
+        //playerLocomotion3Rd.HandleAllMovement();
+        playerTopDownController.HandleAllMovement();
     }
 }
