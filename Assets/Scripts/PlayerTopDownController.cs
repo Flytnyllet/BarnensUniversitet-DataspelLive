@@ -44,9 +44,7 @@ public class PlayerTopDownController : MonoBehaviour
 	
 	private void HandleRotation()
 	{
-		Vector3 targetDirection = Vector3.zero;
-		
-		targetDirection = cameraObject.forward * inputManager.verticalInput;
+		var targetDirection = cameraObject.forward * inputManager.verticalInput;
 		targetDirection += cameraObject.right * inputManager.horizontalInput;
 		targetDirection.Normalize();
 		targetDirection.y = 0;

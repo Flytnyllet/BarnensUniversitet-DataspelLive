@@ -23,10 +23,10 @@ public class InputManager : MonoBehaviour
 		if (playerControls == null)
 		{
 			playerControls = new PlayerControls();
-			
+
 			playerControls.PlayerMovement.Movement.performed += ctx => movementInput = ctx.ReadValue<Vector2>();
 		}
-		
+
 		playerControls.Enable();
 	}
 
@@ -39,12 +39,13 @@ public class InputManager : MonoBehaviour
 	{
 		HandleMovementInput();
 	}
-	
+
 	private void HandleMovementInput()
 	{
 		verticalInput = movementInput.y;
 		horizontalInput = movementInput.x;
 		moveAmount = Mathf.Clamp01(Mathf.Abs(horizontalInput) + Mathf.Abs(verticalInput));
-		animatorManager.UpdateAnimatorValues(0, moveAmount);
+		if (animatorManager)
+			animatorManager.UpdateAnimatorValues(0, moveAmount);
 	}
 }
