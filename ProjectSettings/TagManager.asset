@@ -7,6 +7,7 @@ TagManager:
   - Enemy
   - PickUp
   - Shovel
+  - DropZone
   layers:
   - Default
   - TransparentFX
