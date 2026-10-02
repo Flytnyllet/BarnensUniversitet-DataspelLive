@@ -1,11 +1,18 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class PickUpManager : MonoBehaviour
 {
+	UIManager uiManager;
+	
 	[SerializeField] private Transform playerHand;
 	[SerializeField] private Transform shovelHand;
+	
 
+	[SerializeField] private List<GameObject> items;
+	public int itemsCollected;
+	
 	private GameObject heldItem;
 	private bool insideDropZone;
 
@@ -63,5 +70,8 @@ public class PickUpManager : MonoBehaviour
 			rb.isKinematic = false;
 
 		heldItem = null;
+		itemsCollected += 1;
+		if(itemsCollected == items.Count)
+			uiManager.isGameWon = true;
 	}
 }

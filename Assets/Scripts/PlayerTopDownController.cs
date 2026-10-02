@@ -1,8 +1,13 @@
+using System;
 using UnityEngine;
 
 public class PlayerTopDownController : MonoBehaviour
 {
 	InputManager inputManager;
+	[SerializeField] HealthBar healthBar;
+	
+	public int currentCourage;
+	public int maxCourage;
 
 	private Vector3 moveDirection;
 	private Transform cameraObject;
@@ -16,6 +21,20 @@ public class PlayerTopDownController : MonoBehaviour
 		inputManager = GetComponent<InputManager>();
 		rb = GetComponent<Rigidbody>();
 		cameraObject = Camera.main.transform;
+		currentCourage = maxCourage;
+		healthBar.SetMaxCourage(maxCourage);
+	}
+
+	private void Update()
+	{
+		if (Input.GetKeyDown(KeyCode.Space))
+			TakeDamage(5);
+	}
+
+	private void TakeDamage(int damage)
+	{
+		currentCourage -= damage;
+		healthBar.SetCourage(currentCourage);
 	}
 
 	public void HandleAllMovement()
