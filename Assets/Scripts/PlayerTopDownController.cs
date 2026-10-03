@@ -4,10 +4,12 @@ using UnityEngine;
 public class PlayerTopDownController : MonoBehaviour
 {
 	InputManager inputManager;
+	AnimatorManager animatorManager;
 	[SerializeField] HealthBar healthBar;
-	
+
 	public int currentCourage;
 	public int maxCourage;
+	public bool holdingShovel;
 
 	private Vector3 moveDirection;
 	private Transform cameraObject;
@@ -16,13 +18,17 @@ public class PlayerTopDownController : MonoBehaviour
 	[SerializeField] float moveSpeed = 10f;
 	[SerializeField] float rotationSpeed = 360f;
 
+	[SerializeField] private Collider hitBox;
+
 	private void Awake()
 	{
 		inputManager = GetComponent<InputManager>();
 		rb = GetComponent<Rigidbody>();
+		animatorManager = GetComponent<AnimatorManager>();
 		cameraObject = Camera.main.transform;
 		currentCourage = maxCourage;
 		healthBar.SetMaxCourage(maxCourage);
+		hitBox.enabled = false;
 	}
 
 	private void Update()
@@ -47,33 +53,51 @@ public class PlayerTopDownController : MonoBehaviour
 	{
 		if (inputManager.movementInput.magnitude < 0.001f)
 			return;
-		
+
 		Vector3 cameraForwardDirection = cameraObject.forward;
 		cameraForwardDirection.y = 0;
 		cameraForwardDirection.Normalize();
-		
+
 		Vector3 cameraRightDirection = cameraObject.right;
 		cameraRightDirection.y = 0;
 		cameraRightDirection.Normalize();
-		
-		moveDirection = (cameraForwardDirection * inputManager.verticalInput) + (cameraRightDirection * inputManager.horizontalInput);
-		
+
+		moveDirection = (cameraForwardDirection * inputManager.verticalInput) +
+		                (cameraRightDirection * inputManager.horizontalInput);
+
 		transform.position += moveDirection * (moveSpeed * Time.deltaTime);
 	}
-	
+
 	private void HandleRotation()
 	{
 		var targetDirection = cameraObject.forward * inputManager.verticalInput;
 		targetDirection += cameraObject.right * inputManager.horizontalInput;
 		targetDirection.Normalize();
 		targetDirection.y = 0;
-		
-		if(targetDirection == Vector3.zero)
+
+		if (targetDirection == Vector3.zero)
 			targetDirection = transform.forward;
-		
+
 		Quaternion targetRotation = Quaternion.LookRotation(targetDirection);
-		Quaternion playerRotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * rotationSpeed);
-		
+		Quaternion playerRotation =
+			Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * rotationSpeed);
+
 		transform.rotation = playerRotation;
+	}
+
+	private void EnableHitBox()
+	{
+		hitBox.enabled = true;
+	}
+	
+	private void DisableHitBox()
+	{
+		hitBox.enabled = false;
+	}
+
+	private void AnimationFinished(string animationBool)
+	{
+		Animator animator = GetComponent<Animator>();
+		animator.SetBool(animationBool, false);
 	}
 }

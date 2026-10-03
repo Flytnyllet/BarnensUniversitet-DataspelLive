@@ -3,6 +3,7 @@ using UnityEngine;
 
 public class AnimatorManager : MonoBehaviour
 {
+	private int slåMedSPade = Animator.StringToHash("Slå");
 	private Animator animator;
 	private int horizontal;
 	private int vertical;
@@ -18,5 +19,10 @@ public class AnimatorManager : MonoBehaviour
 	{
 		animator.SetFloat(horizontal, horizontalMovement, 0.1f, Time.deltaTime);
 		animator.SetFloat(vertical, verticalMovement, 0.1f, Time.deltaTime);
+	}
+
+	public void SlåMedSpade(bool slå)
+	{
+		animator.SetBool(slåMedSPade, slå);
 	}
 }

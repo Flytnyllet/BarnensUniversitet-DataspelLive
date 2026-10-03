@@ -4,7 +4,8 @@ using UnityEngine;
 
 public class PickUpManager : MonoBehaviour
 {
-	UIManager uiManager;
+	[SerializeField] UIManager uiManager;
+	PlayerTopDownController playerTopDownController;
 	
 	[SerializeField] private Transform playerHand;
 	[SerializeField] private Transform shovelHand;
@@ -15,6 +16,11 @@ public class PickUpManager : MonoBehaviour
 	
 	private GameObject heldItem;
 	private bool insideDropZone;
+
+	private void Awake()
+	{
+		playerTopDownController = GetComponent<PlayerTopDownController>();
+	}
 
 	private void OnTriggerEnter(Collider other)
 	{
@@ -48,9 +54,15 @@ public class PickUpManager : MonoBehaviour
 		col.enabled = false;
 
 		if (item.CompareTag("Shovel"))
+		{
 			item.transform.SetParent(shovelHand);
-		else
+			playerTopDownController.holdingShovel = true;
+			heldItem = null;
+		}
+		else if (item.CompareTag("PickUp"))
+		{
 			item.transform.SetParent(playerHand);
+		}
 
 		item.transform.localPosition = Vector3.zero;
 		item.transform.localRotation = Quaternion.identity;

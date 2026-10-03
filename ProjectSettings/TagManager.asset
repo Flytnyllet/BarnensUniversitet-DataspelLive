@@ -8,6 +8,7 @@ TagManager:
   - PickUp
   - Shovel
   - DropZone
+  - HitBox
   layers:
   - Default
   - TransparentFX

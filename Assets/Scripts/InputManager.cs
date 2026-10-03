@@ -5,16 +5,19 @@ using UnityEngine.InputSystem;
 
 public class InputManager : MonoBehaviour
 {
+	PlayerTopDownController playerTopDownController;
 	private PlayerControls playerControls;
 	private AnimatorManager animatorManager;
 	public float verticalInput;
 	public float horizontalInput;
 
+	private InputAction slåMedSpade;
 	public Vector2 movementInput;
 	private float moveAmount;
 
 	private void Awake()
 	{
+		playerTopDownController = GetComponent<PlayerTopDownController>();
 		animatorManager = GetComponent<AnimatorManager>();
 	}
 
@@ -38,6 +41,7 @@ public class InputManager : MonoBehaviour
 	public void HandleAllInputs()
 	{
 		HandleMovementInput();
+		HandleSlå();
 	}
 
 	private void HandleMovementInput()
@@ -47,5 +51,11 @@ public class InputManager : MonoBehaviour
 		moveAmount = Mathf.Clamp01(Mathf.Abs(horizontalInput) + Mathf.Abs(verticalInput));
 		if (animatorManager)
 			animatorManager.UpdateAnimatorValues(0, moveAmount);
+	}
+
+	private void HandleSlå()
+	{
+		if(playerControls.PlayerMovement.Slå.triggered && playerTopDownController.holdingShovel)
+			animatorManager.SlåMedSpade(true);
 	}
 }

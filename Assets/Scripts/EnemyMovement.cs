@@ -8,9 +8,10 @@ public class EnemyMovement : MonoBehaviour
 	public float vertical;
 	float moveAmount;
 
+	public bool stunned;
 	public Transform target;
 	private NavMeshAgent agent;
-
+	
 	private void Awake()
 	{
 		agent = GetComponent<NavMeshAgent>();
@@ -26,8 +27,16 @@ public class EnemyMovement : MonoBehaviour
 
 	private void HandleAnimator()
 	{
+		if (stunned)
+		{
+			agent.speed = 0;
+			return;
+		}
+		
 		vertical = agent.speed;
 		moveAmount = Mathf.Clamp01(Mathf.Abs(vertical));
 		animatorManager.UpdateAnimatorValues(0, moveAmount);
 	}
+	
+	
 }
