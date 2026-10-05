@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class AnimatorManager : MonoBehaviour
 {
-	private int slåMedSPade = Animator.StringToHash("Slå");
+	private int attackAnim = Animator.StringToHash("Attack");
 	private Animator animator;
 	private int horizontal;
 	private int vertical;
@@ -21,8 +21,8 @@ public class AnimatorManager : MonoBehaviour
 		animator.SetFloat(vertical, verticalMovement, 0.1f, Time.deltaTime);
 	}
 
-	public void SlåMedSpade(bool slå)
+	public void AttackAnimation(bool attack)
 	{
-		animator.SetBool(slåMedSPade, slå);
+		animator.SetBool(attackAnim, attack);
 	}
 }

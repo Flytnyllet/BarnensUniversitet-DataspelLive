@@ -7807,7 +7807,7 @@ AnimationClip:
     messageOptions: 0
   - time: 0.41666666
     functionName: AnimationFinished
-    data: "Sl\xE5"
+    data: Attack
     objectReferenceParameter: {fileID: 0}
     floatParameter: 0
     intParameter: 0

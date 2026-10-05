@@ -56,6 +56,6 @@ public class InputManager : MonoBehaviour
 	private void HandleSlå()
 	{
 		if(playerControls.PlayerMovement.Slå.triggered && playerTopDownController.holdingShovel)
-			animatorManager.SlåMedSpade(true);
+			animatorManager.AttackAnimation(true);
 	}
 }

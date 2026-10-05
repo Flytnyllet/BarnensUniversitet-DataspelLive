@@ -9,6 +9,7 @@ TagManager:
   - Shovel
   - DropZone
   - HitBox
+  - Ghost
   layers:
   - Default
   - TransparentFX

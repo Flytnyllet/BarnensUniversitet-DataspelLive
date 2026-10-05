@@ -37,7 +37,7 @@ public class PlayerTopDownController : MonoBehaviour
 			TakeDamage(5);
 	}
 
-	private void TakeDamage(int damage)
+	public void TakeDamage(int damage)
 	{
 		currentCourage -= damage;
 		healthBar.SetCourage(currentCourage);
