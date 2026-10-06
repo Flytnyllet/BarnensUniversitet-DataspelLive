@@ -16,7 +16,7 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "Slå",
+                    "name": "Attack",
                     "type": "Button",
                     "id": "b7fb0278-84b6-4749-b116-c9741fcabf09",
                     "expectedControlType": "",
@@ -143,7 +143,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Slå",
+                    "action": "Attack",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -154,7 +154,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Slå",
+                    "action": "Attack",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

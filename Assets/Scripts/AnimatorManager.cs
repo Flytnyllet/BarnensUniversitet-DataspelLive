@@ -4,6 +4,7 @@ using UnityEngine;
 public class AnimatorManager : MonoBehaviour
 {
 	private int attackAnim = Animator.StringToHash("Attack");
+	private int stunAnim = Animator.StringToHash("Stunned");
 	private Animator animator;
 	private int horizontal;
 	private int vertical;
@@ -24,5 +25,10 @@ public class AnimatorManager : MonoBehaviour
 	public void AttackAnimation(bool attack)
 	{
 		animator.SetBool(attackAnim, attack);
+	}
+	
+	public void StunAnimation(bool stunned)
+	{
+		animator.SetBool(stunAnim, stunned);
 	}
 }

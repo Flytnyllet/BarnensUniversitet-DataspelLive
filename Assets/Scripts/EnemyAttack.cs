@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.AI;
 
 [RequireComponent(typeof(EnemyMovement))]
 public class EnemyAttack : MonoBehaviour
@@ -8,25 +7,28 @@ public class EnemyAttack : MonoBehaviour
 	[SerializeField] private float attackRange = 1.5f;
 	[SerializeField] private float attackCooldown = 1.5f;
 
-	[SerializeField] private float rangeLeeway = 0.5f;
-	[SerializeField] private float failSafeTimeout = 3f;
+	private float rangeLeeway = 0.5f;
+	private float failSafeTimeout = 3f;
 
 	private EnemyMovement movement;
 	private AnimatorManager animatorManager;
-	[SerializeField] private PlayerTopDownController player;
+	private PlayerTopDownController player;
 
 	private bool attacking;
+	public bool IsAttacking => attacking;
 	private bool hitDelivered;
 	private float attackStartTime;
 	private float nextAttackTime;
+
+	private void Start()
+	{
+		player = movement.target.GetComponent<PlayerTopDownController>();
+	}
 
 	private void Awake()
 	{
 		movement = GetComponent<EnemyMovement>();
 		animatorManager = GetComponent<AnimatorManager>();
-
-		if (TryGetComponent(out NavMeshAgent agent))
-			agent.stoppingDistance = attackRange * 0.8f;
 	}
 
 	private void Update()
@@ -45,6 +47,8 @@ public class EnemyAttack : MonoBehaviour
 		}
 
 		if (!movement.target) return;
+
+
 		if (!player) return;
 
 		if (Time.time >= nextAttackTime && DistanceToTarget() <= attackRange)
@@ -79,6 +83,7 @@ public class EnemyAttack : MonoBehaviour
 			animatorManager.AttackAnimation(swinging);
 	}
 
+	// Animation events
 	public void OnAttackHit()
 	{
 		if (!attacking || hitDelivered || movement.stunned || player == null) return;

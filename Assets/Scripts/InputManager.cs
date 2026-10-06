@@ -41,7 +41,7 @@ public class InputManager : MonoBehaviour
 	public void HandleAllInputs()
 	{
 		HandleMovementInput();
-		HandleSlå();
+		HandleAttack();
 	}
 
 	private void HandleMovementInput()
@@ -53,9 +53,9 @@ public class InputManager : MonoBehaviour
 			animatorManager.UpdateAnimatorValues(0, moveAmount);
 	}
 
-	private void HandleSlå()
+	private void HandleAttack()
 	{
-		if(playerControls.PlayerMovement.Slå.triggered && playerTopDownController.holdingShovel)
+		if(playerControls.PlayerMovement.Attack.triggered && playerTopDownController.holdingShovel)
 			animatorManager.AttackAnimation(true);
 	}
 }

@@ -10,17 +10,26 @@ public class EnemyMovement : MonoBehaviour
     public bool stunned;
     public Transform target;
     private NavMeshAgent agent;
+    private EnemyAttack enemyAttack;
 
-    [SerializeField] private float knockbackDamping; 
+    [Header("Chasing")]
+    [SerializeField] private float stopDistance = 1.0f;
+    [SerializeField] private float resumeBuffer = 0.2f;
+    [SerializeField] private float turnSpeed = 360f;
+
+    [Header("Knockback")]
+    [SerializeField] private float knockbackDamping = 6f;
 
     private float defaultSpeed;
     private float stunTimer;
     private Vector3 knockbackVelocity;
+    private bool chasing = true;
 
     private void Awake()
     {
         agent = GetComponent<NavMeshAgent>();
         animatorManager = GetComponent<AnimatorManager>();
+        enemyAttack = GetComponent<EnemyAttack>();
         defaultSpeed = agent.speed;
     }
 
@@ -28,9 +37,7 @@ public class EnemyMovement : MonoBehaviour
     {
         HandleStun();
         HandleKnockback();
-
-        if (!stunned)
-            agent.SetDestination(target.position);
+        HandleChase();
 
         if (animatorManager)
             HandleAnimator();
@@ -49,6 +56,35 @@ public class EnemyMovement : MonoBehaviour
         knockbackVelocity = direction.normalized * force;
     }
 
+    private void HandleChase()
+    {
+        if (stunned || !target) return;
+
+        Vector3 toTarget = target.position - transform.position;
+        toTarget.y = 0f;
+        float distance = toTarget.magnitude;
+
+        if (chasing && distance <= stopDistance)
+            chasing = false;
+        else if (!chasing && distance > stopDistance + resumeBuffer)
+            chasing = true;
+
+        bool attacking = enemyAttack && enemyAttack.IsAttacking;
+        bool shouldMove = chasing && !attacking;
+
+        agent.isStopped = !shouldMove;
+
+        if (shouldMove)
+        {
+            agent.SetDestination(target.position);
+        }
+        else if (toTarget.sqrMagnitude > 0.001f)
+        {
+            Quaternion lookRotation = Quaternion.LookRotation(toTarget);
+            transform.rotation = Quaternion.RotateTowards(transform.rotation, lookRotation, turnSpeed * Time.deltaTime);
+        }
+    }
+
     private void HandleStun()
     {
         if (!stunned) return;
@@ -56,6 +92,7 @@ public class EnemyMovement : MonoBehaviour
         stunTimer -= Time.deltaTime;
         if (stunTimer <= 0f)
         {
+            animatorManager.StunAnimation(false);
             stunned = false;
             agent.speed = defaultSpeed;
         }
@@ -78,11 +115,12 @@ public class EnemyMovement : MonoBehaviour
         if (stunned)
         {
             animatorManager.UpdateAnimatorValues(0, 0);
+            animatorManager.StunAnimation(true);
             return;
         }
 
-        vertical = agent.speed;
-        moveAmount = Mathf.Clamp01(Mathf.Abs(vertical));
+        vertical = agent.velocity.magnitude;
+        moveAmount = Mathf.Clamp01(vertical / defaultSpeed);
         animatorManager.UpdateAnimatorValues(0, moveAmount);
     }
 }

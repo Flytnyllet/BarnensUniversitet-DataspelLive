@@ -5,6 +5,7 @@ public class PlayerTopDownController : MonoBehaviour
 {
 	InputManager inputManager;
 	AnimatorManager animatorManager;
+	[SerializeField] UIManager uiManager;
 	[SerializeField] HealthBar healthBar;
 
 	public int currentCourage;
@@ -33,14 +34,15 @@ public class PlayerTopDownController : MonoBehaviour
 
 	private void Update()
 	{
-		if (Input.GetKeyDown(KeyCode.Space))
-			TakeDamage(5);
+		
 	}
 
 	public void TakeDamage(int damage)
 	{
 		currentCourage -= damage;
 		healthBar.SetCourage(currentCourage);
+		if(currentCourage <= 0)
+			uiManager.isGameOver = true;
 	}
 
 	public void HandleAllMovement()
@@ -89,7 +91,7 @@ public class PlayerTopDownController : MonoBehaviour
 	{
 		hitBox.enabled = true;
 	}
-	
+
 	private void DisableHitBox()
 	{
 		hitBox.enabled = false;
