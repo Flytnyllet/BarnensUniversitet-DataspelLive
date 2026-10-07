@@ -17,14 +17,22 @@ public class EnemyMovement : MonoBehaviour
     [SerializeField] private float resumeBuffer = 0.2f;
     [SerializeField] private float turnSpeed = 360f;
 
+    [Header("Fleeing")]
+    [SerializeField] private float fleeDistance = 10f;
+    [SerializeField] private float fleeSpeedMultiplier = 2f;
+    
     [Header("Knockback")]
     [SerializeField] private float knockbackDamping = 6f;
 
     private float defaultSpeed;
     private float stunTimer;
+    private float fleeTimer;
     private Vector3 knockbackVelocity;
     private bool chasing = true;
 
+    public bool IsFleeing => fleeTimer > 0f;
+    private float NormalSpeed => IsFleeing ? defaultSpeed * fleeSpeedMultiplier : defaultSpeed;
+    
     private void Awake()
     {
         agent = GetComponent<NavMeshAgent>();
@@ -36,6 +44,7 @@ public class EnemyMovement : MonoBehaviour
     private void Update()
     {
         HandleStun();
+        HandleFlee();
         HandleKnockback();
         HandleChase();
 
@@ -55,10 +64,59 @@ public class EnemyMovement : MonoBehaviour
         direction.y = 0f;
         knockbackVelocity = direction.normalized * force;
     }
+    
+    public void Flee(float duration)
+    {
+        fleeTimer = duration;
+ 
+        if (!stunned)
+            agent.speed = NormalSpeed;
+ 
+        agent.isStopped = false;
+        agent.SetDestination(FindFleePoint());
+    }
+ 
+    private Vector3 FindFleePoint()
+    {
+        Vector3 best = transform.position;
+        float bestDistance = -1f;
+        NavMeshPath path = new NavMeshPath();
+ 
+        for (int i = 0; i < 12; i++)
+        {
+            Vector2 offset = Random.insideUnitCircle * fleeDistance;
+            Vector3 candidate = transform.position + new Vector3(offset.x, 0f, offset.y);
+ 
+            if (!NavMesh.SamplePosition(candidate, out NavMeshHit hit, 2f, NavMesh.AllAreas)) continue;
+            if (!agent.CalculatePath(hit.position, path) || path.status != NavMeshPathStatus.PathComplete) continue;
+ 
+            float distance = target ? (hit.position - target.position).sqrMagnitude : 0f;
+            if (distance > bestDistance)
+            {
+                bestDistance = distance;
+                best = hit.position;
+            }
+        }
+ 
+        return best;
+    }
+ 
+    private void HandleFlee()
+    {
+        if (!IsFleeing) return;
+ 
+        fleeTimer -= Time.deltaTime;
+        if (fleeTimer <= 0f)
+        {
+            fleeTimer = 0f;
+            if (!stunned)
+                agent.speed = defaultSpeed;
+        }
+    }
 
     private void HandleChase()
     {
-        if (stunned || !target) return;
+        if (stunned || IsFleeing || !target) return;
 
         Vector3 toTarget = target.position - transform.position;
         toTarget.y = 0f;

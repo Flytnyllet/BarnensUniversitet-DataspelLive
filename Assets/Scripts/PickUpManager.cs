@@ -9,14 +9,19 @@ public class PickUpManager : MonoBehaviour
 	
 	[SerializeField] private Transform playerHand;
 	[SerializeField] private Transform shovelHand;
-	
 
+	[SerializeField] private float pickUpLockAfterSteal = 1.5f;
 	[SerializeField] private List<GameObject> items;
-	public int itemsCollected;
 	
+	private float pickUpLockTimer;
 	private GameObject heldItem;
 	private bool insideDropZone;
 
+	private readonly Dictionary<GameObject, (Vector3 position, Quaternion rotation)> itemOrigin = new();
+	
+	public int itemsCollected;
+	public bool HasItem => heldItem != null;
+	
 	private void Awake()
 	{
 		playerTopDownController = GetComponent<PlayerTopDownController>();
@@ -32,6 +37,7 @@ public class PickUpManager : MonoBehaviour
 		}
 
 		if (insideDropZone) return;
+		if (Time.time < pickUpLockAfterSteal) return;
 		if (heldItem) return;
 		if (other.CompareTag(tag: "PickUp") || other.CompareTag(tag: "Shovel"))
 			PickUp(other.gameObject);
@@ -47,6 +53,9 @@ public class PickUpManager : MonoBehaviour
 	{
 		heldItem = item;
 
+		if(!itemOrigin.ContainsKey(item))
+			itemOrigin[item] = (item.transform.position, item.transform.rotation);
+		
 		if (item.TryGetComponent(out Rigidbody rb))
 			rb.isKinematic = true;
 
@@ -85,5 +94,22 @@ public class PickUpManager : MonoBehaviour
 		itemsCollected += 1;
 		if(itemsCollected == items.Count)
 			uiManager.isGameWon = true;
+	}
+
+	public void StealItem()
+	{
+		if (!heldItem) return;
+
+		GameObject item = heldItem;
+		heldItem = null;
+		pickUpLockTimer = Time.time + pickUpLockAfterSteal;
+		
+		item.transform.SetParent(null);
+		
+		if(itemOrigin.TryGetValue(item, out var origin))
+			item.transform.SetPositionAndRotation(origin.position, origin.rotation);
+		
+		Collider col = item.GetComponent<Collider>();
+		col.enabled = true;
 	}
 }
