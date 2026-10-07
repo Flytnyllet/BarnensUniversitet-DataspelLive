@@ -3,7 +3,6 @@ using UnityEngine;
 [RequireComponent(typeof(EnemyMovement))]
 public class GhostHaunt : MonoBehaviour
 {
-	[Tooltip("How close the ghost must be to snatch. Keep it larger than EnemyMovement's stop distance.")]
 	[SerializeField] private float snatchRange = 1.4f;
 	[SerializeField] private float snatchCooldown = 3f;
 	[SerializeField] private float fleeDuration = 5f;
