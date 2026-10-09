@@ -8,6 +8,7 @@ public class PlayerTopDownController : MonoBehaviour
 	[SerializeField] UIManager uiManager;
 	[SerializeField] HealthBar healthBar;
 
+	// public variables
 	public int currentCourage;
 	public int maxCourage;
 	public bool holdingShovel;
@@ -28,20 +29,19 @@ public class PlayerTopDownController : MonoBehaviour
 		animatorManager = GetComponent<AnimatorManager>();
 		cameraObject = Camera.main.transform;
 		currentCourage = maxCourage;
-		healthBar.SetMaxCourage(maxCourage);
-		hitBox.enabled = false;
+		if (healthBar)
+			healthBar.SetMaxCourage(maxCourage);
+		if (hitBox)
+			hitBox.enabled = false;
 	}
-
-	private void Update()
-	{
-		
-	}
-
+	
 	public void TakeDamage(int damage)
 	{
+		if (!healthBar) return;
+
 		currentCourage -= damage;
 		healthBar.SetCourage(currentCourage);
-		if(currentCourage <= 0)
+		if (currentCourage <= 0)
 			uiManager.isGameOver = true;
 	}
 
