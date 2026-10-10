@@ -5,7 +5,7 @@ public class TimedEnemySpawner : MonoBehaviour
 	[SerializeField] private GameObject[] enemyPrefabs;
 	[SerializeField] private Transform[] spawnPoints;
 	[SerializeField] private Transform target;
-	[SerializeField] private float spawnInterval = 10f;
+	[SerializeField] private float spawnInterval;
 
 	private void Start()
 	{
