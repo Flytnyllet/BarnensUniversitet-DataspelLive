@@ -4,6 +4,7 @@ public class StunEnemy : MonoBehaviour
 {
 	[SerializeField] private float knockbackForce = 10f;
 	[SerializeField] private float stunDuration = 1.5f;
+	[SerializeField] private AudioSource audioSource;
 
 	private void OnTriggerEnter(Collider other)
 	{
@@ -14,5 +15,6 @@ public class StunEnemy : MonoBehaviour
 
 		enemy.Stun(stunDuration);
 		enemy.ApplyKnockback(other.transform.position - transform.position, knockbackForce);
+		audioSource.Play();
 	}
 }
