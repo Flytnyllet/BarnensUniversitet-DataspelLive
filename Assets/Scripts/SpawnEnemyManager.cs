@@ -16,11 +16,6 @@ public class EnemySpawner : MonoBehaviour
 		pickUpManager.OnItemDelivered += SpawnNextEnemy;
 	}
 
-	private void Update()
-	{
-		
-	}
-
 	private void OnDisable()
 	{
 		pickUpManager.OnItemDelivered -= SpawnNextEnemy;

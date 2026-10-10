@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using UnityEngine;
 
 public class PlayerTopDownController : MonoBehaviour
@@ -21,6 +22,9 @@ public class PlayerTopDownController : MonoBehaviour
 	[SerializeField] float rotationSpeed = 360f;
 
 	[SerializeField] private Collider hitBox;
+	
+	[SerializeField] private Renderer[] playerRenderers;
+	private Color[] originalColors;
 
 	private void Awake()
 	{
@@ -35,14 +39,34 @@ public class PlayerTopDownController : MonoBehaviour
 			hitBox.enabled = false;
 	}
 	
+	private void Start()
+	{
+		originalColors = new Color[playerRenderers.Length];
+		for (int i = 0; i < playerRenderers.Length; i++)
+			originalColors[i] = playerRenderers[i].material.color;
+	}
+	
 	public void TakeDamage(int damage)
 	{
 		if (!healthBar) return;
 
+		StartCoroutine(FlashRed());
+		
 		currentCourage -= damage;
 		healthBar.SetCourage(currentCourage);
 		if (currentCourage <= 0)
 			uiManager.isGameOver = true;
+	}
+	
+	private IEnumerator FlashRed()
+	{
+		foreach (Renderer r in playerRenderers)
+			r.material.color = Color.red;
+
+		yield return new WaitForSeconds(0.1f);
+
+		for (int i = 0; i < playerRenderers.Length; i++)
+			playerRenderers[i].material.color = originalColors[i];
 	}
 
 	public void HandleAllMovement()
