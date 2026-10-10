@@ -22,6 +22,8 @@ public class PickUpManager : MonoBehaviour
 	public int itemsCollected;
 	public bool HasItem => heldItem != null;
 	
+	public event Action OnItemDelivered;
+	
 	private void Awake()
 	{
 		playerTopDownController = GetComponent<PlayerTopDownController>();
@@ -92,6 +94,7 @@ public class PickUpManager : MonoBehaviour
 
 		heldItem = null;
 		itemsCollected += 1;
+		OnItemDelivered?.Invoke();
 		if(itemsCollected == items.Count)
 			uiManager.isGameWon = true;
 	}
