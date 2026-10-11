@@ -12,6 +12,13 @@ public class EnemyMovement : MonoBehaviour
 	private NavMeshAgent agent;
 	private EnemyAttack enemyAttack;
 
+	[Header("Ghost Mode (leave off for normal enemies)")]
+	[SerializeField] private bool isGhost = false;
+	[SerializeField] private float ghostSpeed = 3f;
+	[SerializeField] private float ghostAcceleration = 8f;
+	[Tooltip("If true, the ghost floats toward the player's height. If false, it stays at its starting height.")]
+	[SerializeField] private bool ghostFollowsHeight = false;
+
 	[Header("Chasing")] [SerializeField] private float stopDistance = 1.0f;
 	[SerializeField] private float resumeBuffer = 0.2f;
 	[SerializeField] private float turnSpeed = 360f;
@@ -27,23 +34,64 @@ public class EnemyMovement : MonoBehaviour
 	private Vector3 knockbackVelocity;
 	private bool chasing = true;
 
+	// Ghost-only state
+	private Vector3 ghostVelocity;
+	private Vector3 ghostDesiredVelocity;
+	private float ghostStartY;
+
 	public bool IsFleeing => fleeTimer > 0f;
 	private float NormalSpeed => IsFleeing ? defaultSpeed * fleeSpeedMultiplier : defaultSpeed;
+	private float GhostMaxSpeed => IsFleeing ? ghostSpeed * fleeSpeedMultiplier : ghostSpeed;
 
 	private void Awake()
 	{
-		agent = GetComponent<NavMeshAgent>();
 		animatorManager = GetComponent<AnimatorManager>();
 		enemyAttack = GetComponent<EnemyAttack>();
-		defaultSpeed = agent.speed;
+		agent = GetComponent<NavMeshAgent>();
+
+		if (isGhost)
+		{
+			ghostStartY = transform.position.y;
+
+			// Disable the agent so it can't snap the ghost back onto the navmesh.
+			if (agent) agent.enabled = false;
+
+			Rigidbody rb = GetComponent<Rigidbody>();
+			if (rb)
+			{
+				rb.isKinematic = true;
+				rb.useGravity = false;
+			}
+
+			// Triggers never block movement but can still detect overlaps.
+			foreach (Collider col in GetComponentsInChildren<Collider>())
+				col.isTrigger = true;
+		}
+		else
+		{
+			defaultSpeed = agent.speed;
+		}
 	}
 
 	private void Update()
 	{
-		HandleStun();
-		HandleFlee();
-		HandleKnockback();
-		HandleChase();
+		if (isGhost)
+		{
+			ghostDesiredVelocity = Vector3.zero;
+			HandleStun();
+			HandleFlee();
+			GhostFlee();
+			GhostChase();
+			GhostApplyMovement();
+			HandleKnockback();
+		}
+		else
+		{
+			HandleStun();
+			HandleFlee();
+			HandleKnockback();
+			HandleChase();
+		}
 
 		if (animatorManager)
 			HandleAnimator();
@@ -53,7 +101,11 @@ public class EnemyMovement : MonoBehaviour
 	{
 		stunned = true;
 		stunTimer = duration;
-		agent.speed = 0;
+
+		if (isGhost)
+			ghostVelocity = Vector3.zero;
+		else
+			agent.speed = 0;
 	}
 
 	public void ApplyKnockback(Vector3 direction, float force)
@@ -66,12 +118,18 @@ public class EnemyMovement : MonoBehaviour
 	{
 		fleeTimer = duration;
 
+		if (isGhost) return; // Ghost flees by floating directly away (see GhostFlee)
+
 		if (!stunned)
 			agent.speed = NormalSpeed;
 
 		agent.isStopped = false;
 		agent.SetDestination(FindFleePoint());
 	}
+
+	// ---------------------------------------------------------------
+	// Normal (NavMesh) enemy logic - unchanged
+	// ---------------------------------------------------------------
 
 	private Vector3 FindFleePoint()
 	{
@@ -106,7 +164,7 @@ public class EnemyMovement : MonoBehaviour
 		if (fleeTimer <= 0f)
 		{
 			fleeTimer = 0f;
-			if (!stunned)
+			if (!isGhost && !stunned)
 				agent.speed = defaultSpeed;
 		}
 	}
@@ -140,6 +198,68 @@ public class EnemyMovement : MonoBehaviour
 		}
 	}
 
+	// ---------------------------------------------------------------
+	// Ghost logic - ignores NavMesh and walls
+	// ---------------------------------------------------------------
+
+	private void GhostFlee()
+	{
+		if (!IsFleeing || stunned || !target) return;
+
+		Vector3 away = transform.position - target.position;
+		if (!ghostFollowsHeight) away.y = 0f;
+		if (away.sqrMagnitude < 0.001f) away = transform.forward;
+
+		ghostDesiredVelocity = away.normalized * GhostMaxSpeed;
+		GhostFace(away);
+	}
+
+	private void GhostChase()
+	{
+		if (stunned || IsFleeing || !target) return;
+
+		Vector3 toTarget = target.position - transform.position;
+		if (!ghostFollowsHeight) toTarget.y = 0f;
+		float distance = toTarget.magnitude;
+
+		if (chasing && distance <= stopDistance)
+			chasing = false;
+		else if (!chasing && distance > stopDistance + resumeBuffer)
+			chasing = true;
+
+		bool attacking = enemyAttack && enemyAttack.IsAttacking;
+		bool shouldMove = chasing && !attacking;
+
+		if (shouldMove)
+			ghostDesiredVelocity = toTarget.normalized * GhostMaxSpeed;
+
+		GhostFace(toTarget);
+	}
+
+	private void GhostApplyMovement()
+	{
+		ghostVelocity = Vector3.MoveTowards(ghostVelocity, ghostDesiredVelocity, ghostAcceleration * Time.deltaTime);
+		Vector3 newPos = transform.position + ghostVelocity * Time.deltaTime;
+
+		if (!ghostFollowsHeight)
+			newPos.y = ghostStartY;
+
+		transform.position = newPos;
+	}
+
+	private void GhostFace(Vector3 dir)
+	{
+		dir.y = 0f;
+		if (dir.sqrMagnitude < 0.001f) return;
+
+		Quaternion lookRotation = Quaternion.LookRotation(dir);
+		transform.rotation = Quaternion.RotateTowards(transform.rotation, lookRotation, turnSpeed * Time.deltaTime);
+	}
+
+	// ---------------------------------------------------------------
+	// Shared
+	// ---------------------------------------------------------------
+
 	private void HandleStun()
 	{
 		if (!stunned) return;
@@ -150,7 +270,9 @@ public class EnemyMovement : MonoBehaviour
 			if (animatorManager)
 				animatorManager.StunAnimation(false);
 			stunned = false;
-			agent.speed = defaultSpeed;
+
+			if (!isGhost)
+				agent.speed = defaultSpeed;
 		}
 	}
 
@@ -162,7 +284,11 @@ public class EnemyMovement : MonoBehaviour
 			return;
 		}
 
-		agent.Move(knockbackVelocity * Time.deltaTime);
+		if (isGhost)
+			transform.position += knockbackVelocity * Time.deltaTime;
+		else
+			agent.Move(knockbackVelocity * Time.deltaTime);
+
 		knockbackVelocity = Vector3.Lerp(knockbackVelocity, Vector3.zero, knockbackDamping * Time.deltaTime);
 	}
 
@@ -175,8 +301,17 @@ public class EnemyMovement : MonoBehaviour
 			return;
 		}
 
-		vertical = agent.velocity.magnitude;
-		moveAmount = Mathf.Clamp01(vertical / defaultSpeed);
+		if (isGhost)
+		{
+			vertical = ghostVelocity.magnitude;
+			moveAmount = Mathf.Clamp01(vertical / ghostSpeed);
+		}
+		else
+		{
+			vertical = agent.velocity.magnitude;
+			moveAmount = Mathf.Clamp01(vertical / defaultSpeed);
+		}
+
 		animatorManager.UpdateAnimatorValues(0, moveAmount);
 	}
 }
