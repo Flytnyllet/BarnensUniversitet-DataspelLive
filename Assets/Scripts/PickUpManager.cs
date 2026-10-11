@@ -95,7 +95,7 @@ public class PickUpManager : MonoBehaviour
 		heldItem = null;
 		itemsCollected += 1;
 		OnItemDelivered?.Invoke();
-		if(itemsCollected == items.Count)
+		if(itemsCollected == items.Count && uiManager)
 			uiManager.isGameWon = true;
 	}
 

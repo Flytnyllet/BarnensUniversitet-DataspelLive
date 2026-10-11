@@ -10,7 +10,6 @@ TagManager:
   - DropZone
   - HitBox
   - Ghost
-  - Pickup
   layers:
   - Default
   - TransparentFX
